@@ -3,12 +3,14 @@ kind: Application
 metadata:
   name: nginx-demo
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: https://github.com/Sipixer/ynov-k8s-orchestration
     targetRevision: main
-    path: nginx-demo
+    path: workloads/nginx-demo
   destination:
     server: https://kubernetes.default.svc
     namespace: demo
