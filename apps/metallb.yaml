@@ -9,10 +9,25 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: default
-  source:
-    repoURL: https://github.com/Sipixer/ynov-k8s-orchestration
-    targetRevision: main
-    path: workloads/metallb
+  sources:
+    - repoURL: https://metallb.github.io/metallb
+      chart: metallb
+      targetRevision: 0.14.9
+      helm:
+        valuesObject:
+          controller:
+            tolerations:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+                effect: NoSchedule
+          speaker:
+            tolerations:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+                effect: NoSchedule
+    - repoURL: https://github.com/Sipixer/ynov-k8s-orchestration
+      targetRevision: main
+      path: workloads/metallb
   destination:
     server: https://kubernetes.default.svc
     namespace: metallb-system
