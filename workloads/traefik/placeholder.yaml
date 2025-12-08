@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: placeholder-html
+  namespace: traefik
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Ynov K8s Platform</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: #fff;
+        }
+        .container {
+          text-align: center;
+          padding: 2rem;
+        }
+        .logo {
+          font-size: 4rem;
+          margin-bottom: 1rem;
+        }
+        h1 {
+          font-size: 2.5rem;
+          margin-bottom: 0.5rem;
+          background: linear-gradient(90deg, #00d9ff, #00ff88);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .subtitle {
+          font-size: 1.2rem;
+          color: #8892b0;
+          margin-bottom: 2rem;
+        }
+        .status {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(0, 255, 136, 0.1);
+          border: 1px solid rgba(0, 255, 136, 0.3);
+          padding: 0.75rem 1.5rem;
+          border-radius: 50px;
+          font-size: 0.9rem;
+        }
+        .status-dot {
+          width: 10px;
+          height: 10px;
+          background: #00ff88;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .info {
+          margin-top: 3rem;
+          color: #5a6a8a;
+          font-size: 0.85rem;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="logo">&#9096;</div>
+        <h1>Ynov K8s Platform</h1>
+        <p class="subtitle">Kubernetes Orchestration Infrastructure</p>
+        <div class="status">
+          <span class="status-dot"></span>
+          <span>Cluster operational</span>
+        </div>
+        <p class="info">Powered by Traefik + ArgoCD + GitOps</p>
+      </div>
+    </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: placeholder
+  namespace: traefik
+  labels:
+    app: placeholder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: placeholder
+  template:
+    metadata:
+      labels:
+        app: placeholder
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
+      volumes:
+        - name: html
+          configMap:
+            name: placeholder-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: placeholder
+  namespace: traefik
+spec:
+  selector:
+    app: placeholder
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: placeholder-route
+  namespace: traefik
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: placeholder
+          port: 80
