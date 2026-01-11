@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [update-chat-app-image]
 
+permissions:
+  contents: write
+
 jobs:
   update-image:
     runs-on: ubuntu-latest
