@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: traefik
+  name: chat-app
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,10 +10,13 @@ spec:
   source:
     repoURL: https://github.com/Sipixer/ynov-k8s-orchestration
     targetRevision: main
-    path: apps/traefik
+    path: apps/chat-app
+    helm:
+      valueFiles:
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: traefik
+    namespace: chat-app
   syncPolicy:
     automated:
       prune: true

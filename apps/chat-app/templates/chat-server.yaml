@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-server
+  namespace: chat-app
+spec:
+  selector:
+    app: chat-server
+  ports:
+    - port: {{ .Values.chatServer.port }}
+      targetPort: {{ .Values.chatServer.port }}
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-server
+  namespace: chat-app
+spec:
+  replicas: {{ .Values.chatServer.replicas }}
+  selector:
+    matchLabels:
+      app: chat-server
+  template:
+    metadata:
+      labels:
+        app: chat-server
+    spec:
+      containers:
+        - name: chat-server
+          image: {{ .Values.chatServer.image }}
+          ports:
+            - containerPort: {{ .Values.chatServer.port }}
+          env:
+            - name: ELASTICACHE_ENDPOINT
+              value: "redis.chat-app.svc.cluster.local:{{ .Values.redis.port }}"

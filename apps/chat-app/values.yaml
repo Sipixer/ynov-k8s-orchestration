@@ -1,0 +1,16 @@
+chatServer:
+  image: ghcr.io/sipixer/server-chat/chat-server:latest
+  replicas: 1
+  port: 3000
+
+redis:
+  image: redis:8.2.2-alpine
+  replicas: 1
+  port: 6379
+  storage:
+    size: 1Gi
+    storageClass: hcloud-volumes
+
+ingress:
+  host: sylvain-chat.duckdns.org
+  className: traefik
