@@ -1,5 +1,5 @@
 chatServer:
-  image: ghcr.io/sipixer/server-chat/chat-server:main-858b73e65fb456b9f74ac9fa5e6e913b57c075f3
+  image: ghcr.io/sipixer/server-chat/chat-server:main-534ec3f
   replicas: 1
   port: 3000
 
