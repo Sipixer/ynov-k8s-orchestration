@@ -28,11 +28,16 @@ spec:
       labels:
         app: redis
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
         - name: redis
           image: {{ .Values.redis.image }}
           ports:
             - containerPort: {{ .Values.redis.port }}
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
           volumeMounts:
             - name: redis-data
               mountPath: /data
