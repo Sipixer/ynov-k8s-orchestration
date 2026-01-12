@@ -2,6 +2,8 @@
 
 Infrastructure as Code pour le déploiement d'une application de chat sur un cluster Kubernetes Hetzner avec ArgoCD.
 
+ArgoCD password : XO3KaT3T6wyLL5bj
+
 ## Architecture
 
 - **Cloud Provider**: Hetzner Cloud (2 VPS)
