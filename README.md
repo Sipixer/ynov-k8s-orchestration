@@ -29,19 +29,6 @@ Infrastructure as Code pour le déploiement d'une application de chat sur un clu
 - ArgoCD pour le déploiement automatique
 - Registry: GitHub Container Registry (ghcr.io)
 
-## Structure du Projet
-
-```
-.
-├── apps/
-│   ├── infrastructure/          # StorageClass et ressources d'infrastructure
-│   ├── cert-manager/           # Configuration SSL/TLS
-│   └── chat-app/               # Application de chat (Helm Chart)
-├── bootstrap/
-│   └── root-app.yaml           # ArgoCD App-of-Apps
-└── .github/workflows/          # CI/CD pipelines
-```
-
 ## Prérequis
 
 - **Cluster Kubernetes** avec kubectl configuré
