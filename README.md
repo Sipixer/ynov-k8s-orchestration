@@ -44,68 +44,30 @@ Infrastructure as Code pour le déploiement d'une application de chat sur un clu
 
 ## Prérequis
 
-- Kubectl configuré avec accès au cluster
-- Helm 3.x
-- Compte Hetzner Cloud avec une API token
-- Domaine configuré (DuckDNS)
+- **Cluster Kubernetes** avec kubectl configuré
+- **LoadBalancer** fonctionnel (Hetzner CCM pour Hetzner Cloud, MetalLB, ou autre)
+- **Ingress Controller** (Traefik configuré avec annotation région pour Hetzner)
+- **ArgoCD** installé sur le cluster
+- **Cert-Manager** pour la génération automatique de certificats SSL
+- **CSI Driver** pour les volumes persistants (Hetzner CSI ou autre)
+- **Domaine** pointant vers l'IP du LoadBalancer
 
-## Installation Rapide
+## Installation
 
-### 1. Configuration du Cluster Hetzner
+Voir le [WALKTHROUGH.md](WALKTHROUGH.md) pour les instructions détaillées d'installation du cluster et de tous les composants.
 
-Créer un secret avec le token API Hetzner:
-```bash
-kubectl create secret generic hcloud \
-  --from-literal=token=<HETZNER_API_TOKEN> \
-  -n kube-system
-```
+### Déploiement GitOps
 
-### 2. Installation du Cloud Controller Manager
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/hetznercloud/hcloud-cloud-controller-manager/master/deploy/ccm.yaml
-```
-
-### 3. Installation du CSI Driver
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/hetznercloud/csi-driver/refs/heads/main/deploy/kubernetes/hcloud-csi.yml
-```
-
-### 4. Installation de Traefik
-
-```bash
-helm repo add traefik https://traefik.github.io/charts
-helm upgrade --install traefik traefik/traefik \
-  --namespace traefik --create-namespace \
-  --set service.type=LoadBalancer \
-  --set service.annotations."load-balancer\.hetzner\.cloud/location"=hel1
-```
-
-### 5. Installation d'ArgoCD
-
-```bash
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-```
-
-### 6. Déploiement de l'Application
+Une fois ArgoCD installé, déployer l'application via GitOps:
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/Sipixer/ynov-k8s-orchestration/refs/heads/main/bootstrap/root-app.yaml
 ```
 
-## Accès à ArgoCD
-
-Récupérer le mot de passe admin:
-```bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-```
-
-Port-forward pour accéder à l'interface:
-```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-```
+ArgoCD va automatiquement déployer:
+- Infrastructure (StorageClass)
+- Cert-Manager avec Let's Encrypt
+- Chat-App (Redis + Chat Server)
 
 ## Workflow CI/CD
 
@@ -171,23 +133,26 @@ sequenceDiagram
 4. **ArgoCD détecte** le changement lors du prochain sync (3min)
 5. **Déploiement automatique** sur le cluster Kubernetes
 
-## Notes Importantes
+## Configuration Spécifique Hetzner
 
-- **Region du LoadBalancer**: Configurée sur `hel1` (Helsinki) pour éviter les erreurs de provisionnement, c'est obligatoire avec Hetzner.
-- **Redis**: Peut redémarrer initialement en attendant le provisionnement du volume
-- **StorageClass**: Utilise des volumes HDD par défaut (modifiable en SSD)
+Pour Hetzner Cloud, les points suivants sont importants:
 
-## Liens Utiles
+- **Cloud Controller Manager (CCM)**: Nécessaire pour provisionner les LoadBalancers
+- **CSI Driver**: Permet le provisionnement dynamique des volumes persistants
+- **Region du LoadBalancer**: Doit être spécifiée (ex: `hel1` pour Helsinki) via l'annotation `load-balancer.hetzner.cloud/location`
+- **Secret API Token**: Le CCM nécessite un secret `hcloud` dans le namespace `kube-system`
 
-- Repository Application: [server-chat](https://github.com/Sipixer/server-chat)
-- Repository Infrastructure: [ynov-k8s-orchestration](https://github.com/Sipixer/ynov-k8s-orchestration)
+Pour d'autres providers (AWS, GCP, Azure, on-premise), adapter selon les besoins avec MetalLB, Longhorn, etc.
+
+## Notes
+
+- **Redis**: Peut redémarrer plusieurs fois au démarrage en attendant le provisionnement du volume persistant
+- **Certificats SSL**: Générés automatiquement par cert-manager via Let's Encrypt
+- **Sync ArgoCD**: Poll toutes les 3 minutes pour détecter les changements
+
+## Liens
+
 - Application: [sylvain-chat.duckdns.org](https://sylvain-chat.duckdns.org)
-
-## Troubleshooting
-
-### LoadBalancer reste en Pending
-Vérifier que le Cloud Controller Manager est déployé et que le secret `hcloud` existe dans le namespace `kube-system` et qeue la région est bien définie sur `hel1`.
-
-### Certificat SSL non généré
-Vérifier que cert-manager est déployé et que le ClusterIssuer Let's Encrypt est configuré correctement.
+- Repo App: [server-chat](https://github.com/Sipixer/server-chat)
+- Repo GitOps: [ynov-k8s-orchestration](https://github.com/Sipixer/ynov-k8s-orchestration)
 
