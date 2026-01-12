@@ -131,29 +131,29 @@ sequenceDiagram
     Registry-->>GHA1: Image publiée
     deactivate Registry
 
-    GHA1->>OpsRepo: 5. Clone repo orchestration
-    activate OpsRepo
-    GHA1->>GHA1: 6. Met à jour values.yaml<br/>(nouveau tag image)
-    GHA1->>OpsRepo: 7. Commit & Push<br/>(nouveau tag)
+    GHA1->>OpsRepo: 5. repository_dispatch<br/>(event: update-chat-app-image)
     deactivate GHA1
-
-    OpsRepo->>GHA2: 8. Déclenche workflow (update-tag)
+    activate OpsRepo
+    OpsRepo->>GHA2: 6. Déclenche workflow
     activate GHA2
-    Note over GHA2: Workflow optionnel pour<br/>validation/tests
+
+    GHA2->>GHA2: 7. Checkout repo
+    GHA2->>GHA2: 8. Update values.yaml<br/>(sed avec nouveau tag)
+    GHA2->>OpsRepo: 9. Commit & Push
     deactivate GHA2
 
-    ArgoCD->>OpsRepo: 9. Poll toutes les 3min<br/>(détecte changement)
+    ArgoCD->>OpsRepo: 10. Poll toutes les 3min<br/>(détecte changement)
     activate ArgoCD
-    ArgoCD->>ArgoCD: 10. Sync détecté<br/>(values.yaml modifié)
-    ArgoCD->>Registry: 11. Pull nouvelle image
+    ArgoCD->>ArgoCD: 11. Sync détecté<br/>(values.yaml modifié)
+    ArgoCD->>Registry: 12. Pull nouvelle image
     activate Registry
     Registry-->>ArgoCD: Image téléchargée
     deactivate Registry
 
-    ArgoCD->>K8s: 12. Apply manifests<br/>(rolling update)
+    ArgoCD->>K8s: 13. Apply manifests<br/>(rolling update)
     activate K8s
-    K8s->>K8s: 13. Termine ancien pod
-    K8s->>K8s: 14. Démarre nouveau pod
+    K8s->>K8s: 14. Termine ancien pod
+    K8s->>K8s: 15. Démarre nouveau pod
     K8s-->>ArgoCD: Déploiement réussi
     deactivate K8s
     deactivate ArgoCD
