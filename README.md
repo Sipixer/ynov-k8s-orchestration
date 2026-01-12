@@ -2,7 +2,6 @@
 
 Infrastructure as Code pour le déploiement d'une application de chat sur un cluster Kubernetes Hetzner avec ArgoCD.
 
-
 ## Architecture
 
 - **Cloud Provider**: Hetzner Cloud (2 VPS)
