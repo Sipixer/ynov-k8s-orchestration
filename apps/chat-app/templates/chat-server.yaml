@@ -35,3 +35,19 @@ spec:
           env:
             - name: ELASTICACHE_ENDPOINT
               value: "redis.chat-app.svc.cluster.local:{{ .Values.redis.port }}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.chatServer.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.chatServer.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
